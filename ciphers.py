@@ -85,7 +85,7 @@ class TapCodeCipher(Cipher):
 
     def encode(self, data: bytes, key: str = None) -> str:
         string = data.decode("utf-8")
-        out = " ".join([(self.tap_by_char[c] if c in self.tap_by_char else "??") for c in string])
+        out = " ".join([(self.tap_by_char[c] if c in self.tap_by_char else "??") for c in string.lower()])
         return out
 
     
@@ -101,12 +101,55 @@ class TapCodeCipher(Cipher):
 class MorseCodeCipher(Cipher):
     def __init__(self) -> None:
         super().__init__("Morse")
+        self.morse_by_char = {
+            "a": ".-",
+            "b": "-...",
+            "c": "-.-.",
+            "d": "-..",
+            "e": ".",
+            "f": "..-.",
+            "g": "--.",
+            "h": "....",
+            "i": "..",
+            "j": ".---",
+            "k": "-.-",
+            "l": ".-..",
+            "m": "--",
+            "n": "-.",
+            "o": "---",
+            "p": ".--.",
+            "q": "--.-",
+            "r": ".-.",
+            "s": "...",
+            "t": "-",
+            "u": "..-",
+            "v": "...-",
+            "w": ".--",
+            "x": "-..-",
+            "y": "-.--",
+            "z": "--..",
+            "1": ".----",
+            "2": "..---",
+            "3": "...--",
+            "4": "....-",
+            "5": ".....",
+            "6": "-....",
+            "7": "--...",
+            "8": "---..",
+            "9": "----.",
+            "0": "-----"
+        }
+        self.char_by_morse = { self.morse_by_char[k]: k for k in self.morse_by_char.keys() }
 
     def encode(self, data: bytes, key: str = None) -> str:
-        return data.decode("utf-8")
+        string = data.decode("utf-8")
+        out = " ".join([(self.morse_by_char[c] if c in self.morse_by_char else "???") for c in string.lower()])
+        return out
     
     def decode(self, string: str, key: str = None) -> bytes:
-        return string.encode("utf-8")
+        symbols = string.split(" ")
+        out = "".join([(self.char_by_morse[symbol] if symbol in self.char_by_morse else "?") for symbol in symbols])
+        return out.encode("utf-8")
 
 all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher()]
 
