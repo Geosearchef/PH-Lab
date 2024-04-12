@@ -1,0 +1,7 @@
+- gradio
+- decryption suite / tools
+- brute force
+- hint generation
+  - summarize solution using other model
+- solution guess
+- auto submit
