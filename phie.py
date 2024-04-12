@@ -4,6 +4,11 @@ from ciphers import all_ciphers
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
 
 def run_cipher(input_cipher_index: int, input_key: str, output_cipher_index: int, output_key: str, input_text: str) -> str:
+    if len(input_text) > 3000:
+        return "Input too long"
+    if len(input_text) > 300 and input_key == "all":
+        return "Input too long"
+
     input_cipher = all_ciphers[input_cipher_index]
     output_cipher = all_ciphers[output_cipher_index]
 
@@ -28,6 +33,18 @@ with gr.Blocks() as app:
                 right_text_area = gr.TextArea(interactive=True, show_label=False, show_copy_button=True)
                 right_key_area = gr.Textbox(label="Key", interactive=True)
         
+        left_cipher_selector.select(
+            fn=lambda cindex, key: "all" if cindex == cipher_names.index("Caesar") and not key.isnumeric() else key,
+            inputs=[left_cipher_selector, left_key_area],
+            outputs=[left_key_area]
+        )
+        right_cipher_selector.select(
+            fn=lambda cindex, key: "all" if cindex == cipher_names.index("Caesar") and not key.isnumeric() else key,
+            inputs=[right_cipher_selector, right_key_area],
+            outputs=[right_key_area]
+        )
+        
+        # run the ciphers
         gr.on(
             triggers=[left_cipher_selector.select, left_text_area.input, left_key_area.input],
             fn=run_cipher,
