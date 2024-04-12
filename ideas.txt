@@ -5,3 +5,9 @@
   - summarize solution using other model
 - solution guess
 - auto submit
+
+
+
+improvements:
+
+- cesar: maintain non shiftable chars

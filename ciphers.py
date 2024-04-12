@@ -69,5 +69,44 @@ class CaesarCipher(Cipher):
         else:
             return self.encode(string.encode("utf-8"), str(int(key) * (-1) + 26)).encode("utf-8")
 
-all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher()]
+
+class TapCodeCipher(Cipher):
+    def __init__(self) -> None:
+        super().__init__("Tap")
+        self.tap_by_char = {
+            'a': "11", 'b': "12", 'c': "13", 'd': "14", 'e': "15",
+            'f': "21", 'g': "22", 'h': "23", 'i': "24", 'j': "25",
+            'l': "31", 'm': "32", 'n': "33", 'o': "34", 'p': "35",
+            'q': "41", 'r': "42", 's': "43", 't': "44", 'u': "45",
+            'v': "51", 'w': "52", 'x': "53", 'y': "54", 'z': "55",
+            'k': "13"
+        }
+        self.char_by_tap = { self.tap_by_char[k]: k for k in self.tap_by_char.keys() }
+
+    def encode(self, data: bytes, key: str = None) -> str:
+        string = data.decode("utf-8")
+        out = " ".join([(self.tap_by_char[c] if c in self.tap_by_char else "??") for c in string])
+        return out
+
+    
+    def decode(self, string: str, key: str = None) -> bytes:
+        if not " " in string and len(string) % 2 != 0:
+           return "No spaces in string and string of odd length".encode("utf-8")
+        
+        pairs = string.split(" ") if " " in string else [string[i:i+2] for i in range(0, len(string), 2)]
+        out = "".join([(self.char_by_tap[tap] if tap in self.char_by_tap else "?") for tap in pairs])
+        return out.encode("utf-8")
+
+
+class MorseCodeCipher(Cipher):
+    def __init__(self) -> None:
+        super().__init__("Morse")
+
+    def encode(self, data: bytes, key: str = None) -> str:
+        return data.decode("utf-8")
+    
+    def decode(self, string: str, key: str = None) -> bytes:
+        return string.encode("utf-8")
+
+all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher()]
 
