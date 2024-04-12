@@ -69,12 +69,16 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
     
     with gr.Tab("Bruteforce"):
         gr.Markdown("brute force cesar, other keys, ...")
+        gr.Button("Google it", variant="primary")
 
     with gr.Tab("Anagram"):
         gr.Markdown("anagram solver")
 
     with gr.Tab("Dictionary"):
         gr.Markdown("regex dictionary search")
+
+    with gr.Tab("Base Converter"):
+        gr.Markdown("not yet implemented")
 
 
 demo = app

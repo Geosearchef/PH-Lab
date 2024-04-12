@@ -151,5 +151,51 @@ class MorseCodeCipher(Cipher):
         out = "".join([(self.char_by_morse[symbol] if symbol in self.char_by_morse else "?") for symbol in symbols])
         return out.encode("utf-8")
 
-all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher()]
+class SMSMultiTapCipher(Cipher):
+    def __init__(self) -> None:
+        super().__init__("SMS")
+        self.mt_by_char = {
+            "a": "2",
+            "b": "22",
+            "c": "222",
+            "d": "3",
+            "e": "33",
+            "f": "333",
+            "g": "4",
+            "h": "44",
+            "i": "444",
+            "j": "5",
+            "k": "55",
+            "l": "555",
+            "m": "6",
+            "n": "66",
+            "o": "666",
+            "p": "7",
+            "q": "77",
+            "r": "777",
+            "s": "7777",
+            "t": "8",
+            "u": "88",
+            "v": "888",
+            "w": "9",
+            "x": "99",
+            "y": "999",
+            "z": "9999",
+            " ": "0"
+        }
+        self.char_by_mt = { self.mt_by_char[k]: k for k in self.mt_by_char.keys() }
+
+    def encode(self, data: bytes, key: str = None) -> str:
+        string = data.decode("utf-8")
+        out = " ".join([(self.mt_by_char[c] if c in self.mt_by_char else "???") for c in string.lower()])
+        return out
+    
+    def decode(self, string: str, key: str = None) -> bytes:
+        symbols = string.split(" ")
+        out = "".join([(self.char_by_mt[symbol] if symbol in self.char_by_mt else "?") for symbol in symbols])
+        return out.encode("utf-8")
+
+
+
+all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher()]
 

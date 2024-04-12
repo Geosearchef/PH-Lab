@@ -1,10 +1,9 @@
-- gradio
-- decryption suite / tools
+Dictionary ->
+- T9 cipher
+- anagram solver
+- dictionary search
 - brute force
-- hint generation
-  - summarize solution using other model
-- solution guess
-- auto submit
+- auto submit?
 
 
 
