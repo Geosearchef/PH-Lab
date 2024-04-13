@@ -1,7 +1,10 @@
 import gradio as gr
 from ciphers import all_ciphers
+from dictionary import AnagramLookupTable, dictionary_all
 
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
+
+# Cipher
 
 def run_cipher(input_cipher_index: int, input_key: str, output_cipher_index: int, output_key: str, input_text: str) -> str:
     if len(input_text) > 3000:
@@ -20,6 +23,17 @@ def run_cipher(input_cipher_index: int, input_key: str, output_cipher_index: int
 
 #available_ciphers = ["Text", "Numbers", "Cesar", "Tap", "Morse"]
 cipher_names = [c.name for c in all_ciphers]
+
+
+# Dictionary
+
+anagram_lookup_table = AnagramLookupTable(dictionary_all)
+
+def lookup_anagram(anagram: str) -> str:
+    solutions = anagram_lookup_table.lookup(anagram.replace(" ", ""))
+    return f"{len(solutions)} results found:\n\n{'\n'.join(solutions)}" if solutions is not None else f"No results found for '{anagram}'"
+
+
 
 css = ".small-button { max-width: 2.8em; min-width: 2.8em !important; align-self: center; border-radius: 0.5em;}"
 
@@ -72,13 +86,32 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
         gr.Button("Google it", variant="primary")
 
     with gr.Tab("Anagram"):
-        gr.Markdown("anagram solver")
+        anagram_input = gr.Textbox(interactive=True, label="Anagram")
+        anagram_solve_button = gr.Button("Lookup", variant="primary")
+        anagram_output = gr.TextArea(label="Solutions", interactive=False)
+
+        gr.on(
+            triggers=[anagram_input.submit, anagram_solve_button.click],
+            fn=lookup_anagram,
+            inputs=[anagram_input],
+            outputs=[anagram_output]
+        )
 
     with gr.Tab("Dictionary"):
         gr.Markdown("regex dictionary search")
 
     with gr.Tab("Base Converter"):
         gr.Markdown("not yet implemented")
+    
+    with gr.Tab("Have you googled it?"):
+        gr.Markdown("""No? Then maybe it's time to do so.
+                    - ISBN
+                    - IP address
+                    - phone numbers
+                    - Coordinates
+                    
+                    **Take a look at the cheatsheet Brainstorming section.**
+                    """)
 
 
 demo = app

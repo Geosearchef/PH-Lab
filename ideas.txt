@@ -3,6 +3,8 @@ Dictionary ->
 - anagram solver
 - dictionary search
 - brute force
+- frequency analysis
+- base converter
 - auto submit?
 
 
