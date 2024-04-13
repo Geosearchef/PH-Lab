@@ -1,6 +1,7 @@
 import gradio as gr
 from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
+from analysis import bruteforce_string_filter_sort
 import re
 
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
@@ -28,6 +29,12 @@ def run_cipher(input_cipher_index: int, input_key: str, output_cipher_index: int
 
 #available_ciphers = ["Text", "Numbers", "Cesar", "Tap", "Morse"]
 cipher_names = [c.name for c in all_ciphers]
+
+# Analysis
+
+def brute_force_input(input: str) -> str:
+    results = bruteforce_string_filter_sort(input, total_iterations=3)
+    return "\n".join([str(r) for r in results]) if len(results) != 0 else "No results found"
 
 
 # Dictionary
@@ -95,9 +102,23 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
         )
     
     
-    with gr.Tab("Bruteforce"):
-        gr.Markdown("brute force cesar, other keys, ...")
-        gr.Button("Google it", variant="primary")
+    with gr.Tab("Analysis"):
+        with gr.Row():
+            with gr.Column():
+                analysis_input = gr.Textbox(interactive=True, label="Input", placeholder="Input a single word")
+                analysis_solve_button = gr.Button("Do Magic", variant="primary")
+                gr.Markdown("### Frequency Analysis \n not implemented")
+
+            with gr.Column():
+                analysis_output = gr.TextArea(label="Output", interactive=False)
+
+        gr.on(
+            triggers=[analysis_input.submit, analysis_solve_button.click],
+            fn=brute_force_input,
+            inputs=[analysis_input],
+            outputs=[analysis_output]
+        )
+        # gr.Button("Google it", variant="primary")
 
     with gr.Tab("Anagram"):
         with gr.Row():

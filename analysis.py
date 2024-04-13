@@ -50,13 +50,17 @@ def apply_all_ciphers(string: str) -> list[tuple[str, str]]:
 
 analysis_anagram_lookup_table = AnagramLookupTable(dictionary_all)
 def apply_anagram_search(string: str) -> list[tuple[str, str]]:
+    if "?" in string:
+        return []
     anagrams = analysis_anagram_lookup_table.lookup(string)
     return [(a, "anagram") for a in anagrams] if anagrams is not None else []
 
-# not yet implemented: guess substitution cypher
+def remove_spaces(string: str) -> str:
+    return string.replace(" ", ""), "remove spaces"
 
 
-transforms = [string_reverse, string_reverse_group_order, string_reverse_groups, apply_all_ciphers, apply_anagram_search]
+
+transforms = [string_reverse, string_reverse_group_order, string_reverse_groups, remove_spaces, apply_all_ciphers, apply_anagram_search]
 
 
 # Validators
@@ -84,13 +88,13 @@ def is_part_word(string: str, dictionary: list[str]) -> bool:
     
     return any([word in dictionary for word in words if len(word) >= 3])
 
-def is_german_phone_number(string: str, dictionary: list[str]) -> bool:
-    return re.sub(r"\D", "", string).startswith("49")
+def is_munich_phone_number(string: str, dictionary: list[str]) -> bool:
+    return re.sub(r"\D", "", string).startswith("4989")
 
 def could_be_coordinate(string: str, dictionary: list[str]) -> bool:
     return (any([it in string for it in ["N", "S"]]) and any([it in string for it in ["E", "W"]])) and any([it.isdigit() for it in string])
 
-validators = [is_part_word, is_isbn, is_german_phone_number, could_be_coordinate]
+validators = [is_part_word, is_isbn, is_munich_phone_number, could_be_coordinate]
 
 
 
@@ -131,7 +135,7 @@ def bruteforce_string(string: str, path: list[str] = [], total_iterations: int =
         # filter already seen, long, unknown, non alphanumerical
         new_results = [r for r in new_results if not r.string in seen_already]
         new_results = [r for r in new_results if len(r.string) < 200 and r.string.count("?") < 5]
-        new_results = [r for r in new_results if any([c.isalnum() for c in r.string])]
+        new_results = [r for r in new_results if any([c.isalnum() for c in r.string]) and not "No spaces in string" in r.string]
         
         # for r in new_results:
         #     print(r.string)
@@ -157,17 +161,21 @@ def bruteforce_string(string: str, path: list[str] = [], total_iterations: int =
 
     return results
     
-
-
-# Test
-if __name__ == "__main__":
-    results = bruteforce_string("3 22 4 9 99 55 9999 8 55 6 99 4", total_iterations=4)
+def bruteforce_string_filter_sort(string: str, total_iterations: int = 4):
+    results = bruteforce_string(string, total_iterations=total_iterations)
     results_filtered = []
     for r in sorted(results, key=lambda r: r.depth):
         if not r.string in [it.string for it in results_filtered]:
             results_filtered.append(r)
     results_filtered = list(sorted(results_filtered, key=lambda r: validators.index(r.validator)))
+    return results_filtered
 
-    for r in results_filtered:
+# Test
+if __name__ == "__main__":
+    #results = bruteforce_string_filter_sort("3 22 4 9 99 55 9999 8 55 6 99 4", total_iterations=4)
+    results = bruteforce_string_filter_sort("..- .--- -.-. -. --.- -.- .-.. .-- --.. ....", total_iterations=4)
+    results = bruteforce_string_filter_sort("24 22 23 5 23 18 23 18 21 8 18", total_iterations=4)
+    
+    for r in results:
         print(r)
 

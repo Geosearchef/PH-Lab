@@ -1,9 +1,9 @@
 Dictionary ->
 - T9 cipher
-- brute force
+- cesar box cipher
 - frequency analysis
+- guess substitution cypher
 - base converter
-- auto submit?
 
 
 
