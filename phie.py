@@ -1,6 +1,7 @@
 import gradio as gr
 from ciphers import all_ciphers
-from dictionary import AnagramLookupTable, dictionary_all
+from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
+import re
 
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
 
@@ -27,15 +28,24 @@ cipher_names = [c.name for c in all_ciphers]
 
 # Dictionary
 
-anagram_lookup_table = AnagramLookupTable(dictionary_all)
+anagram_lookup_table_all = AnagramLookupTable(dictionary_all)
+anagram_lookup_table_common = AnagramLookupTable(dictionary_popular)
 
-def lookup_anagram(anagram: str) -> str:
-    solutions = anagram_lookup_table.lookup(anagram.replace(" ", ""))
+def lookup_anagram(anagram: str, limit_to_common: bool) -> str:
+    lookup_table = anagram_lookup_table_all if not limit_to_common else anagram_lookup_table_common
+    solutions = lookup_table.lookup(anagram.replace(" ", ""))
     return f"{len(solutions)} results found:\n\n{'\n'.join(solutions)}" if solutions is not None else f"No results found for '{anagram}'"
 
+def find_word(search_string: str, limit_to_common: bool) -> str:
+    results = find_words_by_regex(re.compile(search_string), dictionary_all if not limit_to_common else dictionary_popular)
+    return f"{len(results)} words found:\n\n{'\n'.join(results)}" if len(results) != 0 else f"No results found for '{search_string}'"
 
 
-css = ".small-button { max-width: 2.8em; min-width: 2.8em !important; align-self: center; border-radius: 0.5em;}"
+
+css = """
+.small-button { max-width: 2.8em; min-width: 2.8em !important; align-self: center; }
+.centered-checkbox > label {  }
+"""
 
 with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
     gr.Markdown("# Puzzle Hunt Intelligence Laboratory")
@@ -86,19 +96,32 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
         gr.Button("Google it", variant="primary")
 
     with gr.Tab("Anagram"):
-        anagram_input = gr.Textbox(interactive=True, label="Anagram")
+        with gr.Row():
+            anagram_input = gr.Textbox(interactive=True, label="Anagram", placeholder="tbr?tu")
+            anagram_limit_common = gr.Checkbox(label="Limit to common words", value=False, interactive=True, scale=0, elem_classes=["centered-checkbox"])
         anagram_solve_button = gr.Button("Lookup", variant="primary")
         anagram_output = gr.TextArea(label="Solutions", interactive=False)
 
         gr.on(
             triggers=[anagram_input.submit, anagram_solve_button.click],
             fn=lookup_anagram,
-            inputs=[anagram_input],
+            inputs=[anagram_input, anagram_limit_common],
             outputs=[anagram_output]
         )
 
     with gr.Tab("Dictionary"):
-        gr.Markdown("regex dictionary search")
+        with gr.Row():
+            dictionary_input = gr.Textbox(interactive=True, label="Regular Expression", placeholder="wa.+(er|it)")  # alternative: w.ter.rop
+            dictionary_limit_common = gr.Checkbox(label="Limit to common words", value=False, interactive=True, scale=0, elem_classes=["centered-checkbox"])
+        dictionary_solve_button = gr.Button("Search", variant="primary")
+        dictionary_output = gr.TextArea(label="Results", interactive=False)
+
+        gr.on(
+            triggers=[dictionary_input.submit, dictionary_solve_button.click],
+            fn=find_word,
+            inputs=[dictionary_input, dictionary_limit_common],
+            outputs=[dictionary_output]
+        )
 
     with gr.Tab("Base Converter"):
         gr.Markdown("not yet implemented")

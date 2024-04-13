@@ -1,3 +1,4 @@
+import re
 
 
 with open("words_sorted.txt") as f:
@@ -43,3 +44,6 @@ class AnagramLookupTable:
         else:
             return None
 
+
+def find_words_by_regex(regex: re.Pattern, dictionary: list[str]):
+    return [word for word in dictionary if regex.fullmatch(word)]
