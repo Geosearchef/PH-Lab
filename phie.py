@@ -17,7 +17,11 @@ def run_cipher(input_cipher_index: int, input_key: str, output_cipher_index: int
     output_cipher = all_ciphers[output_cipher_index]
 
     data = input_cipher.decode(input_text, input_key)
+    if isinstance(data, list):
+        data = "\n".join([b.decode("utf-8") for b in data]).encode("utf-8")
     output_text = output_cipher.encode(data, output_key)
+    if isinstance(output_text, list):
+        output_text = "\n".join(output_text)
 
     return output_text
 

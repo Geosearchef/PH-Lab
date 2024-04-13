@@ -51,9 +51,10 @@ class CaesarCipher(Cipher):
         return chr(sn + 96)
 
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str = "all") -> str | list[str]:
         if not key.isnumeric():
-            return "\n".join([f"{shift}: {self.encode(data, key=str(shift))}" for shift in range(0, 26)])
+            return [self.encode(data, key=str(shift)) for shift in range(0, 26)]
+            #return [f"{shift}: {self.encode(data, key=str(shift))}" for shift in range(0, 26)]
         else:
             shift = int(key) * (-1) + 26 if key.isnumeric() else 0
             string = data.decode("utf-8")
@@ -63,9 +64,10 @@ class CaesarCipher(Cipher):
             out = "".join([self.shift_char(c, shift) for c in string])
             return out
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str = "all") -> bytes | list[bytes]:
         if not key.isnumeric():
-            return "\n".join([f"{shift}: {self.encode(string.encode("utf-8"), key=str(shift * (-1) + 26))}" for shift in range(0, 26)]).encode("utf-8")
+            return [self.encode(string.encode("utf-8"), key=str(shift * (-1) + 26)).encode("utf-8") for shift in range(0, 26)]
+            #return [f"{shift}: {self.encode(string.encode("utf-8"), key=str(shift * (-1) + 26))}".encode("utf-8") for shift in range(0, 26)]
         else:
             return self.encode(string.encode("utf-8"), str(int(key) * (-1) + 26)).encode("utf-8")
 
@@ -198,4 +200,5 @@ class SMSMultiTapCipher(Cipher):
 
 
 all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher()]
+analysis_ciphers = [NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher()]
 

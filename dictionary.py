@@ -29,7 +29,7 @@ class AnagramLookupTable:
     def sort_word(self, word: str) -> str:
         return "".join(sorted(word))
 
-    def lookup(self, word: str) -> list[str]:
+    def lookup(self, word: str) -> list[str] | None:
         if "?" in word:
             results = []
             for c in [chr(i + 97) for i in range(26)]:
