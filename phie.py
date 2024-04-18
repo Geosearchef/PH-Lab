@@ -68,7 +68,7 @@ def lookup_anagram(anagram: str, limit_to_common: bool) -> str:
     return f"{len(solutions)} results found:\n\n{'\n'.join(solutions)}" if solutions is not None else f"No results found for '{anagram}'"
 
 def find_word(search_string: str, limit_to_common: bool) -> str:
-    results = find_words_by_regex(re.compile(search_string), dictionary_all if not limit_to_common else dictionary_popular)
+    results = find_words_by_regex(re.compile(search_string, re.IGNORECASE), dictionary_all if not limit_to_common else dictionary_popular)
     return f"{len(results)} words found:\n\n{'\n'.join(results)}" if len(results) != 0 else f"No results found for '{search_string}'"
 
 
