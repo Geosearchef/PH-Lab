@@ -3,6 +3,7 @@ from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
 from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
 import re
+import time
 
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
 
@@ -33,11 +34,17 @@ cipher_names = [c.name for c in all_ciphers]
 # Analysis
 
 def brute_force_input(input: str) -> str:
-    results = bruteforce_string_filter_sort(input, total_iterations=3)
-    return "\n".join([str(r) for r in results]) if len(results) != 0 else "No results found"
+    timeout_stamp = time.time() + 30.0
+    results = bruteforce_string_filter_sort(input, timeout_stamp=timeout_stamp, total_iterations=3)
+    result_string = "\n".join([str(r) for r in results]) if len(results) != 0 else "No results found"
+    
+    if time.time() > timeout_stamp:
+        result_string = "Maximum computation time exceeded!\n\n" + result_string
+
+    return result_string
 
 
-def statistical_text_analysis(input: str) -> dict[str, float]:
+def statistical_text_analysis(input: str) -> tuple[dict[str, float], str]:
     if input == "":
         return {}, ""
 
@@ -52,7 +59,7 @@ def statistical_text_analysis(input: str) -> dict[str, float]:
     norm_freqs = {s: freqs_by_symbol[s] / num_symbols for s in freqs_by_symbol}
     top_norm_freqs = {s: freqs_by_symbol[s] / max_freq for s in freqs_by_symbol}
 
-    entropy = calculate_entropy(probs=norm_freqs.values())
+    entropy = calculate_entropy(probs=list(norm_freqs.values()))
 
     return norm_freqs, f"{entropy:.3}"
 

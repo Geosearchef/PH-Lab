@@ -46,5 +46,5 @@ class AnagramLookupTable:
             return None
 
 
-def find_words_by_regex(regex: re.Pattern, dictionary: list[str]):
+def find_words_by_regex(regex: re.Pattern, dictionary: list[str]) -> list[str]:
     return [word for word in dictionary if regex.fullmatch(word)]

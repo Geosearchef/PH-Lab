@@ -2,6 +2,9 @@ import re
 from ciphers import analysis_ciphers
 from dictionary import dictionary_all, AnagramLookupTable
 from math import log2
+import time
+
+from collections.abc import Callable
 
 
 # Frequency analysis
@@ -34,7 +37,7 @@ def string_reverse_groups(string: str) -> tuple[str, str]:
 def string_reverse_group_order(string: str) -> tuple[str, str]:
     return " ".join(reversed(string.split(" "))), "reverse group order"
 
-def string_bigram_substitue(string: str) -> tuple[str, str]:
+def string_bigram_substitue(string: str) -> tuple[str, str] | None:
     if not " " in string and len(string) % 2 != 0:
         return None
     
@@ -76,7 +79,7 @@ def apply_anagram_search(string: str) -> list[tuple[str, str]]:
     anagrams = analysis_anagram_lookup_table.lookup(string)
     return [(a, "anagram") for a in anagrams] if anagrams is not None else []
 
-def remove_spaces(string: str) -> str:
+def remove_spaces(string: str) -> tuple[str, str]:
     return string.replace(" ", ""), "remove spaces"
 
 
@@ -125,7 +128,7 @@ class BruteforceResult:
     string: str
     path: list[str]
     depth: int
-    validator: str
+    validator: Callable[[str, list[str]], bool] | None
 
     def __init__(self, string: str, path: list[str], depth: int):
         self.string = string
@@ -134,11 +137,11 @@ class BruteforceResult:
         self.validator = None
     
     def __str__(self) -> str:
-        return f"{self.string}      ---   {"->".join(self.path)}   ---   {self.validator.__name__}"
+        return f"{self.string}      ---   {"->".join(self.path)}   ---   {self.validator.__name__ if self.validator is not None else "none"}"
 
 
-def bruteforce_string(string: str, path: list[str] = [], total_iterations: int = 3, depth: int = 0, seen_already: set[str] = set()) -> set[BruteforceResult]:
-    if depth == total_iterations:
+def bruteforce_string(string: str, timeout_stamp: float, path: list[str] = [], total_iterations: int = 3, depth: int = 0, seen_already: set[str] = set()) -> set[BruteforceResult]:
+    if depth == total_iterations or time.time() > timeout_stamp:
         return set()
     
     string = string.lower()
@@ -166,7 +169,7 @@ def bruteforce_string(string: str, path: list[str] = [], total_iterations: int =
 
         # deepen
         seen_already = seen_already.union(set([r.string for r in new_results]))  # previous deeper iterations are now unseen, could be returned and passed around
-        new_results += [ cr for r in new_results for cr in bruteforce_string(r.string, r.path, total_iterations, depth + 1, seen_already) ]  # list comprehensions are magic
+        new_results += [ cr for r in new_results for cr in bruteforce_string(r.string, timeout_stamp, r.path, total_iterations, depth + 1, seen_already) ]  # list comprehensions are magic
 
         # add results
         results = results.union(set(new_results))
@@ -182,8 +185,8 @@ def bruteforce_string(string: str, path: list[str] = [], total_iterations: int =
 
     return results
     
-def bruteforce_string_filter_sort(string: str, total_iterations: int = 4):
-    results = bruteforce_string(string, total_iterations=total_iterations)
+def bruteforce_string_filter_sort(string: str, timeout_stamp: float, total_iterations: int = 4):
+    results = bruteforce_string(string, timeout_stamp=timeout_stamp, total_iterations=total_iterations)
     results_filtered = []
     for r in sorted(results, key=lambda r: r.depth):
         if not r.string in [it.string for it in results_filtered]:
@@ -194,8 +197,8 @@ def bruteforce_string_filter_sort(string: str, total_iterations: int = 4):
 # Test
 if __name__ == "__main__":
     #results = bruteforce_string_filter_sort("3 22 4 9 99 55 9999 8 55 6 99 4", total_iterations=4)
-    results = bruteforce_string_filter_sort("..- .--- -.-. -. --.- -.- .-.. .-- --.. ....", total_iterations=4)
-    results = bruteforce_string_filter_sort("24 22 23 5 23 18 23 18 21 8 18", total_iterations=4)
+    results = bruteforce_string_filter_sort("..- .--- -.-. -. --.- -.- .-.. .-- --.. ....", timeout_stamp=time.time() + 30.0, total_iterations=4)
+    results = bruteforce_string_filter_sort("24 22 23 5 23 18 23 18 21 8 18", timeout_stamp=time.time() + 30.0, total_iterations=4)
     
     for r in results:
         print(r)

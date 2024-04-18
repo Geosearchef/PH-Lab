@@ -3,20 +3,20 @@ class Cipher:
     def __init__(self, name) -> None:
         self.name = name
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str | None = None) -> str:
         return data.decode("utf-8")
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str | None = None) -> bytes:
         return string.encode("utf-8")
 
 class TextCipher(Cipher):
     def __init__(self) -> None:
         super().__init__("Text")
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str | None = None) -> str:
         return data.decode("utf-8")
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str | None = None) -> bytes:
         return string.encode("utf-8")
 
 
@@ -24,12 +24,12 @@ class NumbersCipher(Cipher):
     def __init__(self) -> None:
         super().__init__("Numbers")
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str | None = None) -> str:
         string = data.decode("utf-8")
         out = " ".join([str(ord(c) % 32) for c in string if c.isalpha()])
         return out
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str | None = None) -> bytes:
         try:
             out = "".join([chr(int(n) % 32 + 96) for n in string.split(" ")])
         except ValueError:
@@ -51,9 +51,9 @@ class CaesarCipher(Cipher):
         return chr(sn + 96)
 
 
-    def encode(self, data: bytes, key: str = "all") -> str | list[str]:
-        if not key.isnumeric():
-            return [self.encode(data, key=str(shift)) for shift in range(0, 26)]
+    def encode(self, data: bytes, key: str | None = "all") -> str | list[str]:
+        if key is None or not key.isnumeric():
+            return [str(self.encode(data, key=str(shift))) for shift in range(0, 26)]  # the str() conversion converts str->str and is only necessary to comfort the type checker
             #return [f"{shift}: {self.encode(data, key=str(shift))}" for shift in range(0, 26)]
         else:
             shift = int(key) * (-1) + 26 if key.isnumeric() else 0
@@ -64,12 +64,12 @@ class CaesarCipher(Cipher):
             out = "".join([self.shift_char(c, shift) for c in string])
             return out
     
-    def decode(self, string: str, key: str = "all") -> bytes | list[bytes]:
-        if not key.isnumeric():
-            return [self.encode(string.encode("utf-8"), key=str(shift * (-1) + 26)).encode("utf-8") for shift in range(0, 26)]
+    def decode(self, string: str, key: str | None = "all") -> bytes | list[bytes]:
+        if key is None or not key.isnumeric():
+            return [str(self.encode(string.encode("utf-8"), key=str(shift * (-1) + 26))).encode("utf-8") for shift in range(0, 26)]
             #return [f"{shift}: {self.encode(string.encode("utf-8"), key=str(shift * (-1) + 26))}".encode("utf-8") for shift in range(0, 26)]
         else:
-            return self.encode(string.encode("utf-8"), str(int(key) * (-1) + 26)).encode("utf-8")
+            return str(self.encode(string.encode("utf-8"), str(int(key) * (-1) + 26))).encode("utf-8")
 
 
 class TapCodeCipher(Cipher):
@@ -85,13 +85,13 @@ class TapCodeCipher(Cipher):
         }
         self.char_by_tap = { self.tap_by_char[k]: k for k in self.tap_by_char.keys() }
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str | None = None) -> str:
         string = data.decode("utf-8")
         out = " ".join([(self.tap_by_char[c] if c in self.tap_by_char else "??") for c in string.lower()])
         return out
 
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str | None = None) -> bytes:
         if not " " in string and len(string) % 2 != 0:
            return "No spaces in string and string of odd length".encode("utf-8")
         
@@ -143,12 +143,12 @@ class MorseCodeCipher(Cipher):
         }
         self.char_by_morse = { self.morse_by_char[k]: k for k in self.morse_by_char.keys() }
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str | None = None) -> str:
         string = data.decode("utf-8")
         out = " ".join([(self.morse_by_char[c] if c in self.morse_by_char else "???") for c in string.lower()])
         return out
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str | None = None) -> bytes:
         symbols = string.split(" ")
         out = "".join([(self.char_by_morse[symbol] if symbol in self.char_by_morse else "?") for symbol in symbols])
         return out.encode("utf-8")
@@ -187,12 +187,12 @@ class SMSMultiTapCipher(Cipher):
         }
         self.char_by_mt = { self.mt_by_char[k]: k for k in self.mt_by_char.keys() }
 
-    def encode(self, data: bytes, key: str = None) -> str:
+    def encode(self, data: bytes, key: str | None = None) -> str:
         string = data.decode("utf-8")
         out = " ".join([(self.mt_by_char[c] if c in self.mt_by_char else "???") for c in string.lower()])
         return out
     
-    def decode(self, string: str, key: str = None) -> bytes:
+    def decode(self, string: str, key: str | None = None) -> bytes:
         symbols = string.split(" ")
         out = "".join([(self.char_by_mt[symbol] if symbol in self.char_by_mt else "?") for symbol in symbols])
         return out.encode("utf-8")
