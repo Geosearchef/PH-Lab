@@ -1,7 +1,7 @@
 import gradio as gr
 from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
-from analysis import bruteforce_string_filter_sort
+from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
 import re
 
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
@@ -37,6 +37,26 @@ def brute_force_input(input: str) -> str:
     return "\n".join([str(r) for r in results]) if len(results) != 0 else "No results found"
 
 
+def statistical_text_analysis(input: str) -> dict[str, float]:
+    if input == "":
+        return {}, ""
+
+    freqs_by_symbol = analyze_frequencies(input)
+    
+    if len(freqs_by_symbol) == 0:
+        return {}, ""
+
+    num_symbols = sum(freqs_by_symbol.values())
+    max_freq = max(freqs_by_symbol.values())
+
+    norm_freqs = {s: freqs_by_symbol[s] / num_symbols for s in freqs_by_symbol}
+    top_norm_freqs = {s: freqs_by_symbol[s] / max_freq for s in freqs_by_symbol}
+
+    entropy = calculate_entropy(probs=norm_freqs.values())
+
+    return norm_freqs, f"{entropy:.3}"
+
+
 # Dictionary
 
 anagram_lookup_table_all = AnagramLookupTable(dictionary_all)
@@ -56,6 +76,8 @@ def find_word(search_string: str, limit_to_common: bool) -> str:
 css = """
 .small-button { max-width: 2.8em; min-width: 2.8em !important; align-self: center; }
 .centered-checkbox > label {  }
+.label-no-heading > div > h2 { display: none; }
+.top-margin { margin-top: 30pt; }
 """
 
 with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
@@ -107,7 +129,11 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             with gr.Column():
                 analysis_input = gr.Textbox(interactive=True, label="Input", placeholder="Input a single word")
                 analysis_solve_button = gr.Button("Do Magic", variant="primary")
-                gr.Markdown("### Frequency Analysis \n not implemented")
+
+                entropy_label = gr.Label(container=True, label="Entropy - language = 3.6 - 4.2", elem_classes=["top-margin"])                
+                frequency_bins = gr.Label(value={}, label="Frequency Analysis", num_top_classes=10, container=False, elem_classes=["label-no-heading"])
+                #gr.Markdown("Entropy of natural language: 3.5 - 4.2")
+
 
             with gr.Column():
                 analysis_output = gr.TextArea(label="Output", interactive=False)
@@ -118,7 +144,11 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             inputs=[analysis_input],
             outputs=[analysis_output]
         )
-        # gr.Button("Google it", variant="primary")
+        analysis_input.change(
+            fn=statistical_text_analysis,
+            inputs=[analysis_input],
+            outputs=[frequency_bins, entropy_label]
+        )
 
     with gr.Tab("Anagram"):
         with gr.Row():
@@ -164,5 +194,6 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
 
 demo = app
 
+print("Launching webapp")
 app.launch()
 

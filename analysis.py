@@ -1,6 +1,27 @@
 import re
 from ciphers import analysis_ciphers
 from dictionary import dictionary_all, AnagramLookupTable
+from math import log2
+
+
+# Frequency analysis
+
+def analyze_frequencies(string: str) -> dict[str, int]:
+    string = string.lower()
+    symbols = []
+    if " " in string:
+        symbols = string.split(" ")
+        if any([len(s) > 4 for s in symbols]):
+            symbols = [c for c in string if c.isalnum()]  # Only works for alphanumeric symbols
+    else:
+        symbols = [c for c in string]
+    return { s: string.count(s) for s in symbols }
+
+def calculate_entropy(probs: list[float]) -> float:
+    return sum([(-1.0) * p * log2(p) for p in probs])
+
+
+
 
 # Transforms
 
