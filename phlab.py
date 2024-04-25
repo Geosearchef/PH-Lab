@@ -93,6 +93,9 @@ def int_to_base(n: int, base: int) -> str:
 
 def convert_base(input: str, in_base: str, out_base: str) -> str:
     try:
+        if int(in_base) < 2 or int(out_base) < 2 or int(in_base) > 36 or int(out_base) > 36:
+            return "Invalid base"
+    
         return " ".join([int_to_base(int(num, int(in_base)), int(out_base)) for num in input.split()])
     except ValueError:
         return "Invalid"
@@ -113,41 +116,48 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
         with gr.Row():
             with gr.Column():
                 with gr.Row():
-                    base_selector_left = gr.Radio(cipher_names, value=cipher_names[1], type="index", interactive=True, show_label=False)
-                    base_run_button_left = gr.Button("➡️", elem_classes=["small-button"], variant="secondary", scale=0)
-                base_text_area_left = gr.TextArea(interactive=True, show_label=False, show_copy_button=True)
-                left_key_area = gr.Textbox(label="Key", interactive=True)
+                    cipher_selector_left = gr.Radio(cipher_names, value=cipher_names[0], type="index", interactive=True, show_label=False)
+                    cipher_run_button_left = gr.Button("➡️", elem_classes=["small-button"], variant="secondary", scale=0)
+                cipher_text_area_left = gr.TextArea(interactive=True, show_label=False, show_copy_button=True)
+                cipher_key_area_left = gr.Textbox(label="Key", interactive=True)
             with gr.Column():
                 with gr.Row():
-                    base_run_button_right = gr.Button("⬅️", elem_classes=["small-button"], scale=0)
-                    base_selector_right = gr.Radio(cipher_names, value=cipher_names[0], type="index", interactive=True, show_label=False)
+                    cipher_swap_input_button_right = gr.Button("🔄", elem_classes=["small-button"], scale=0)
+                    cipher_selector_right = gr.Radio(cipher_names, value=cipher_names[0], type="index", interactive=True, show_label=False)
                 
-                right_text_area = gr.TextArea(interactive=True, show_label=False, show_copy_button=True)
-                right_key_area = gr.Textbox(label="Key", interactive=True)
+                cipher_text_area_right = gr.TextArea(interactive=False, show_label=False, show_copy_button=True)
+                cipher_key_area_right = gr.Textbox(label="Key", interactive=True)
         
-        base_selector_left.select(
+        cipher_selector_left.select(
             fn=lambda cindex, key: "all" if cindex == cipher_names.index("Caesar") and not key.isnumeric() else key,
-            inputs=[base_selector_left, left_key_area],
-            outputs=[left_key_area]
+            inputs=[cipher_selector_left, cipher_key_area_left],
+            outputs=[cipher_key_area_left]
         )
-        base_selector_right.select(
+        cipher_selector_right.select(
             fn=lambda cindex, key: "all" if cindex == cipher_names.index("Caesar") and not key.isnumeric() else key,
-            inputs=[base_selector_right, right_key_area],
-            outputs=[right_key_area]
+            inputs=[cipher_selector_right, cipher_key_area_right],
+            outputs=[cipher_key_area_right]
         )
         
         # run the ciphers
         gr.on(
-            triggers=[base_run_button_left.click, base_text_area_left.input, left_key_area.input],
+            triggers=[cipher_run_button_left.click, cipher_text_area_left.change, cipher_key_area_left.input, cipher_selector_left.select, cipher_selector_right.select, cipher_key_area_right.input],
             fn=run_cipher,
-            inputs=[base_selector_left, left_key_area, base_selector_right, right_key_area, base_text_area_left],
-            outputs=[right_text_area]
+            inputs=[cipher_selector_left, cipher_key_area_left, cipher_selector_right, cipher_key_area_right, cipher_text_area_left],
+            outputs=[cipher_text_area_right]
         )
-        gr.on(
-            triggers=[base_run_button_right.click, right_text_area.input, right_key_area.input],
-            fn=run_cipher,
-            inputs=[base_selector_right, right_key_area, base_selector_left, left_key_area, right_text_area],
-            outputs=[base_text_area_left]
+        # gr.on(
+        #     triggers=[base_run_button_right.click, right_text_area.input, right_key_area.input],
+        #     fn=run_cipher,
+        #     inputs=[base_selector_right, right_key_area, base_selector_left, left_key_area, right_text_area],
+        #     outputs=[base_text_area_left]
+        # )
+
+        # swap inputs
+        cipher_swap_input_button_right.click(
+            fn=lambda t, r, l, kr, kl: (t, cipher_names[r], cipher_names[l], kr, kl),
+            inputs=[cipher_text_area_right, cipher_selector_right, cipher_selector_left, cipher_key_area_right, cipher_key_area_left],
+            outputs=[cipher_text_area_left, cipher_selector_left, cipher_selector_right, cipher_key_area_left, cipher_key_area_right]
         )
     
     
@@ -221,29 +231,37 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
                 base_text_area_left = gr.TextArea(interactive=True, show_label=False, show_copy_button=True)
             with gr.Column():
                 with gr.Row():
-                    base_run_button_right = gr.Button("⬅️", elem_classes=["small-button"], variant="secondary", scale=0)
+                    base_swap_inputs_right = gr.Button("🔄", elem_classes=["small-button"], variant="secondary", scale=0)
                     base_key_right = gr.Textbox(interactive=True, show_label=False, value="10")
                     selector_by_base = { base: gr.Button(str(base), elem_classes=["small-button"], variant="secondary", scale=0) for base in bases }
 
                     for base in bases:
                         selector_by_base[base].click(lambda b=base: str(b), inputs=[], outputs=[base_key_right])
 
-                base_text_area_right = gr.TextArea(interactive=True, show_label=False, show_copy_button=True)
+                base_text_area_right = gr.TextArea(interactive=False, show_label=False, show_copy_button=True)
 
         
         # run the ciphers
         gr.on(
-            triggers=[base_run_button_left.click, base_text_area_left.input],
+            triggers=[base_run_button_left.click, base_text_area_left.change, base_key_left.change, base_key_right.change],
             fn=convert_base,
             inputs=[base_text_area_left, base_key_left, base_key_right],
             outputs=[base_text_area_right]
         )
-        gr.on(
-            triggers=[base_run_button_right.click, base_text_area_right.input],
-            fn=convert_base,
+        # gr.on(
+        #     triggers=[base_swap_inputs_right.click, base_text_area_right.input],
+        #     fn=convert_base,
+        #     inputs=[base_text_area_right, base_key_right, base_key_left],
+        #     outputs=[base_text_area_left]
+        # )
+
+        base_swap_inputs_right.click(
+            fn=lambda t, r, l: (t, r, l),
             inputs=[base_text_area_right, base_key_right, base_key_left],
-            outputs=[base_text_area_left]
+            outputs=[base_text_area_left, base_key_left, base_key_right]
         )
+
+
     
     with gr.Tab("Have you googled it?"):
         gr.Markdown("""No? Then maybe it's time to do so.
