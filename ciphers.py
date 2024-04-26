@@ -31,7 +31,7 @@ class NumbersCipher(Cipher):
     
     def decode(self, string: str, key: str | None = None) -> bytes:
         try:
-            out = "".join([chr(int(n) % 32 + 96) for n in string.split(" ")])
+            out = "".join([chr(int(n) % 32 + 96) for n in string.split()])
         except ValueError:
             out = ""
         
