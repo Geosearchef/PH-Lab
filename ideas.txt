@@ -1,12 +1,17 @@
 Dictionary ->
 - T9 cipher
 - cesar box cipher
-- frequency analysis
 - guess substitution cypher
-- base converter
 
 
+- index selector
+- all caesar shifts + word search
+- large word search
+- oeis
+- T9
+- calculator (eval, read realPython on how to make this safe)
 
 improvements:
 
 - cesar: maintain non shiftable chars
+- numbers: maintain non number chars
