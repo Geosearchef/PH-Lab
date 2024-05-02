@@ -53,8 +53,13 @@ class NumbersCipher(Cipher):
         return out
     
     def decode(self, string: str, key: str | None = None) -> bytes:
+        if not " " in string and len(string) % 2 != 0:
+           return "No spaces in string and string of odd length".encode("utf-8")
+        
+        number_strings = string.split() if " " in string else [string[i:i+2] for i in range(0, len(string), 2)]
+        
         try:
-            out = "".join([chr(int(n) % 32 + 96) for n in string.split()])
+            out = "".join([chr(int(n) % 32 + 96) for n in number_strings])
         except ValueError:
             out = ""
         

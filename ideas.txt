@@ -4,9 +4,9 @@ Dictionary ->
 - guess substitution cypher
 
 
-- index selector
+- index selector (multi-line)
 - all caesar shifts + word search
-- large word search
+- large word search ( / word grid finder)
 - oeis
 - T9
 - calculator (eval, read realPython on how to make this safe)
