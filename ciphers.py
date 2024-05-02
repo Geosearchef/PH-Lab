@@ -19,6 +19,29 @@ class TextCipher(Cipher):
     def decode(self, string: str, key: str | None = None) -> bytes:
         return string.encode("utf-8")
 
+class HexAsciiCipher(Cipher):
+    def __init__(self) -> None:
+        super().__init__("Hex")
+
+    def encode(self, data: bytes, key: str | None = None) -> str:
+        string = data.decode("utf-8")
+        out = " ".join([str(hex(ord(c))[2:]) for c in string])
+        return out
+    
+    def decode(self, string: str, key: str | None = None) -> bytes:
+        string = string.replace("0x", "")
+
+        if not " " in string and len(string) % 2 != 0:
+           return "No spaces in string and string of odd length".encode("utf-8")
+        
+        char_vals = string.split(" ") if " " in string else [string[i:i+2] for i in range(0, len(string), 2)]
+        try: 
+            chars = [chr(int(h, 16)) for h in char_vals if h != ""]
+        except ValueError:
+            return "Please use valid hexadecimal values".encode("utf-8")
+
+        return ("".join(chars)).encode("utf-8")
+
 
 class NumbersCipher(Cipher):
     def __init__(self) -> None:
@@ -26,7 +49,7 @@ class NumbersCipher(Cipher):
 
     def encode(self, data: bytes, key: str | None = None) -> str:
         string = data.decode("utf-8")
-        out = " ".join([str(ord(c) % 32) for c in string if c.isalpha()])
+        out = " ".join([str(ord(c) % 32) for c in string if c.isalpha()]) # todo: auto split with even length
         return out
     
     def decode(self, string: str, key: str | None = None) -> bytes:
@@ -199,6 +222,6 @@ class SMSMultiTapCipher(Cipher):
 
 
 
-all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher()]
-analysis_ciphers = [NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher()]
+all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher(), HexAsciiCipher()]
+analysis_ciphers = [NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher(), HexAsciiCipher()]
 
