@@ -9,7 +9,6 @@ Dictionary ->
 - large word search ( / word grid finder)
 - oeis
 - T9
-- calculator (eval, read realPython on how to make this safe)
 
 improvements:
 

@@ -2,6 +2,7 @@ import gradio as gr
 from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
 from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
+from evaluation import eval_expression
 import re
 import time
 
@@ -77,6 +78,12 @@ def lookup_anagram(anagram: str, limit_to_common: bool) -> str:
 def find_word(search_string: str, limit_to_common: bool) -> str:
     results = find_words_by_regex(re.compile(search_string, re.IGNORECASE), dictionary_all if not limit_to_common else dictionary_popular)
     return f"{len(results)} words found:\n\n{'\n'.join(results)}" if len(results) != 0 else f"No results found for '{search_string}'"
+
+
+# Calculator
+
+def run_calculation(expr: str) -> str:
+    return eval_expression(expr)
 
 
 # Base converter
@@ -213,6 +220,20 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             fn=find_word,
             inputs=[dictionary_input, dictionary_limit_common],
             outputs=[dictionary_output]
+        )
+    
+    with gr.Tab("Calculator"):
+        with gr.Row():
+            with gr.Column():
+                calculator_input = gr.Textbox(label="Input", placeholder="Enter a mathematical expression")
+                calculator_solve_button = gr.Button("Compute", variant="primary")
+            calculator_output = gr.Textbox(label="Results", interactive=False)
+
+        gr.on(
+            triggers=[calculator_input.submit, calculator_solve_button.click],
+            fn=eval_expression,
+            inputs=[calculator_input],
+            outputs=[calculator_output]
         )
 
     with gr.Tab("Base Converter"):
