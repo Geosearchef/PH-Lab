@@ -4,13 +4,13 @@ Dictionary ->
 - guess substitution cypher
 
 
-- index selector (multi-line)
 - all caesar shifts + word search
 - large word search ( / word grid finder)
-- oeis
 - T9
+- oeis
 
 improvements:
 
 - cesar: maintain non shiftable chars
 - numbers: maintain non number chars
+- index selector multiple indices per line

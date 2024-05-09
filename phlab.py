@@ -86,6 +86,27 @@ def run_calculation(expr: str) -> str:
     return eval_expression(expr)
 
 
+# Indexing
+
+def index_words(words: str, indices: str, include_spaces: bool) -> str:
+    if not include_spaces:
+        words = words.replace(" ", "")
+
+    words_list, indices_list = words.split("\n"), indices.split("\n")
+    if len(indices_list) == 1 and len(words_list) > 1:
+        indices_list *= len(words_list)
+    elif len(words_list) == 1 and len(indices_list) > 1:
+        words_list *= len(indices_list)
+
+    if len(words_list) != len(indices_list):
+        return "Error: Number of words and indices must be the same"
+    
+    try:
+        return "\n".join([f"{words_list[i][int(indices_list[i]) - 1]}   -   {words_list[i]}[{int(indices_list[i])}]" for i in range(len(words_list)) if int(indices_list[i]) - 1 < len(words_list[i])])
+    except ValueError as e:
+        return "Error: Indices must be integers"
+
+
 # Base converter
 
 def int_to_base(n: int, base: int) -> str:
@@ -234,6 +255,23 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             fn=eval_expression,
             inputs=[calculator_input],
             outputs=[calculator_output]
+        )
+
+    with gr.Tab("Indexing"):
+        with gr.Column():
+            with gr.Row():
+                indexing_words_input = gr.TextArea(label="Words", placeholder="Words separated by newline")
+                indexing_indices_input = gr.TextArea(label="Indices", placeholder="Indices separated by newline")
+                indexing_output = gr.TextArea(label="Results", interactive=False)
+            
+            indexing_include_spaces_checkbox = gr.Checkbox(label="Include spaces", value=False)
+            gr.Markdown("Note: Indices are 1-based")
+        
+        gr.on(
+            triggers=[indexing_words_input.change, indexing_indices_input.change, indexing_include_spaces_checkbox.change],
+            fn=index_words,
+            inputs=[indexing_words_input, indexing_indices_input, indexing_include_spaces_checkbox],
+            outputs=[indexing_output]
         )
 
     with gr.Tab("Base Converter"):
