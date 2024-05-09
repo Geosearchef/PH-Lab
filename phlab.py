@@ -3,6 +3,7 @@ from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
 from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
 from evaluation import eval_expression
+from oeis import oeis_database
 import re
 import time
 
@@ -128,7 +129,17 @@ def convert_base(input: str, in_base: str, out_base: str) -> str:
     except ValueError:
         return "Invalid"
 
+# OEIS
 
+def lookup_oeis_seq(sequence: str) -> str:
+    if len(sequence) < 9:
+        return "Sequence too short"
+    results = [f"{id}:   {s}" for id, s in oeis_database.lookup_by_sequence(sequence.strip())]
+    return "\n".join(results) if len(results) > 0 else "No results found"
+
+def lookup_oeis_id(id: str) -> str:
+    res = oeis_database.lookup_by_index(id)
+    return res if res is not None else "ID not found"
 
 
 css = """
@@ -320,6 +331,25 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             outputs=[base_text_area_left, base_key_left, base_key_right]
         )
 
+    with gr.Tab("Integer Series"):
+        with gr.Row():
+            with gr.Column():
+                oeis_sequence_input = gr.Textbox(label="Sequence", placeholder="Enter comma separated sequence here...")
+                oeis_identifier_input = gr.Textbox(label="Identifier", placeholder="Enter A000000 identifier here...")
+                gr.Markdown("Based on [The Online Encyclopedia of Integer Sequences](https://oeis.org/)")
+            oeis_output = gr.TextArea(label="Output")
+        
+        
+        oeis_sequence_input.change(
+            fn=lookup_oeis_seq,
+            inputs=[oeis_sequence_input],
+            outputs=[oeis_output]
+        )
+        oeis_identifier_input.change(
+            fn=lookup_oeis_id,
+            inputs=[oeis_identifier_input],
+            outputs=[oeis_output]
+        )
 
     
     with gr.Tab("Have you googled it?"):
