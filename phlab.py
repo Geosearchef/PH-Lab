@@ -1,6 +1,6 @@
 import gradio as gr
 from ciphers import all_ciphers
-from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex
+from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex, T9LookupTree
 from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
 from evaluation import eval_expression
 from oeis import oeis_database
@@ -79,6 +79,8 @@ def lookup_anagram(anagram: str, limit_to_common: bool) -> str:
 def find_word(search_string: str, limit_to_common: bool) -> str:
     results = find_words_by_regex(re.compile(search_string, re.IGNORECASE), dictionary_all if not limit_to_common else dictionary_popular)
     return f"{len(results)} words found:\n\n{'\n'.join(results)}" if len(results) != 0 else f"No results found for '{search_string}'"
+
+# T9
 
 
 # Calculator
@@ -167,13 +169,20 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
                 cipher_text_area_right = gr.TextArea(interactive=False, show_label=False, show_copy_button=True)
                 cipher_key_area_right = gr.Textbox(label="Key", interactive=True)
         
+        def get_key(cindex, key):
+            if cindex == cipher_names.index("Caesar") and not key.isnumeric():
+                return "all"
+            if cindex == cipher_names.index("T9") and not key == "common" and not key == "all" and not key == "uncommon":
+                return "common"
+            return key
+
         cipher_selector_left.select(
-            fn=lambda cindex, key: "all" if cindex == cipher_names.index("Caesar") and not key.isnumeric() else key,
+            fn=get_key,
             inputs=[cipher_selector_left, cipher_key_area_left],
             outputs=[cipher_key_area_left]
         )
         cipher_selector_right.select(
-            fn=lambda cindex, key: "all" if cindex == cipher_names.index("Caesar") and not key.isnumeric() else key,
+            fn=get_key,
             inputs=[cipher_selector_right, cipher_key_area_right],
             outputs=[cipher_key_area_right]
         )

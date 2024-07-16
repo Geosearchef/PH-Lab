@@ -1,3 +1,4 @@
+from dictionary import dictionary_all, dictionary_popular, T9LookupTree
 
 class Cipher:
     def __init__(self, name) -> None:
@@ -226,7 +227,22 @@ class SMSMultiTapCipher(Cipher):
         return out.encode("utf-8")
 
 
+t9_lookup_tree_all = T9LookupTree(dictionary_all)
+t9_lookup_tree_common = T9LookupTree(dictionary_popular)
 
-all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher(), HexAsciiCipher()]
-analysis_ciphers = [NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher(), HexAsciiCipher()]
+class T9Cipher(Cipher):
+    def __init__(self) -> None:
+        super().__init__("T9")
+    
+    def decode(self, string: str, key: str | None = None) -> bytes:
+        tree = t9_lookup_tree_common if key == "common" else t9_lookup_tree_all
+
+        return tree.lookup(string).encode("utf-8")
+    
+    def encode(self, data: bytes, key: str | None = None) -> str:
+        lookup_table = t9_lookup_tree_all.key_lookup
+        return " ".join(["".join([str(lookup_table[c]) if c in lookup_table else "?" for c in s]) for s in data.decode("utf-8").lower().split(" ")])
+
+all_ciphers = [TextCipher(), NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher(), HexAsciiCipher(), T9Cipher()]
+analysis_ciphers = [NumbersCipher(), CaesarCipher(), MorseCodeCipher(), TapCodeCipher(), SMSMultiTapCipher()]
 

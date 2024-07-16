@@ -1,4 +1,6 @@
-./words_alpha.txt
-./words_popular.txt
-./words_sorted.txt
-./oeis.txt
+words_alpha.txt
+words_popular.txt
+words_sorted.txt
+oeis.txt
+.vscode/
+__pycache__/

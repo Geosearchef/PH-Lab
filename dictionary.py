@@ -48,3 +48,85 @@ class AnagramLookupTable:
 
 def find_words_by_regex(regex: re.Pattern, dictionary: list[str]) -> list[str]:
     return [word for word in dictionary if regex.fullmatch(word)]
+
+
+from typing import Self
+
+class T9LookupTree:
+
+    class T9TreeNode:
+        children: list[Self | None]
+        words: list[str]
+
+        def __init__(self) -> None:
+            self.children = [None for _ in range(10)]
+            self.words = []
+    
+    root: T9TreeNode
+    key_lookup: dict[str, int]
+
+    def __init__(self, dictionary: list[str]) -> None:
+        self.root = self.T9TreeNode()
+        self.key_lookup = {
+            "a": 2,
+            "b": 2,
+            "c": 2,
+            "d": 3,
+            "e": 3,
+            "f": 3,
+            "g": 4,
+            "h": 4,
+            "i": 4,
+            "j": 5,
+            "k": 5,
+            "l": 5,
+            "m": 6,
+            "n": 6,
+            "o": 6,
+            "p": 7,
+            "q": 7,
+            "r": 7,
+            "s": 7,
+            "t": 8,
+            "u": 8,
+            "v": 8,
+            "w": 9,
+            "x": 9,
+            "y": 9,
+            "z": 9,
+            "+": 0,
+        }
+
+        print(f"Building T9 lookup tree for {len(dictionary)} words...")
+        self.build_tree(dictionary)
+        print(f"Lookup tree built")
+
+
+    def build_tree(self, dictionary: list[str]):
+        for word in dictionary:
+            current = self.root
+            for c in word:
+                n = self.key_lookup[c.lower()] - 1
+                if current.children[n] is None:
+                    current.children[n] = self.T9TreeNode()
+                current = current.children[n]
+
+            current.words.append(word)
+    
+    def lookup(self, input: str, multipart: bool = False) -> str:
+        if " " in input:
+            return " ".join([self.lookup(s, multipart=True) for s in input.split(" ")])
+        if any([not c.isdigit() for c in input]):
+            return "Ahoy matey! We cannot sail the high seas of the lookup tree with that input."
+        
+        current = self.root
+        for c in input:
+            current = current.children[int(c) - 1]
+            if current is None:
+                return "No match found"
+        
+        if multipart:
+            return str(current.words)
+        else:
+            return "\n".join(current.words)
+
