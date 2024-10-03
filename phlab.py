@@ -6,6 +6,7 @@ from evaluation import eval_expression
 from oeis import oeis_database
 import re
 import time
+from config import config
 
 #redirect_to_light_js = "window.addEventListener('load', function () {gradioURL = window.location.href; if (!gradioURL.endsWith('?__theme=light')) {window.location.replace(gradioURL + '?__theme=dark');}});"
 
@@ -85,7 +86,9 @@ def find_word(search_string: str, limit_to_common: bool) -> str:
 
 # Calculator
 
-def run_calculation(expr: str) -> str:
+def run_calculation(expr: str, password: str) -> str:
+    if not "calculator_password" in config or password.lower() not in config["calculator_password"]:
+        return "Wrong passcode"
     return eval_expression(expr)
 
 
@@ -268,12 +271,13 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             with gr.Column():
                 calculator_input = gr.Textbox(label="Input", placeholder="Enter a mathematical expression")
                 calculator_solve_button = gr.Button("Compute", variant="primary")
+                calculator_passcode = gr.Textbox(label="Passcode", placeholder="Enter team")
             calculator_output = gr.Textbox(label="Results", interactive=False)
 
         gr.on(
             triggers=[calculator_input.submit, calculator_solve_button.click],
-            fn=eval_expression,
-            inputs=[calculator_input],
+            fn=run_calculation,
+            inputs=[calculator_input, calculator_passcode],
             outputs=[calculator_output]
         )
 
