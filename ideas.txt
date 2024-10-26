@@ -1,19 +1,6 @@
 Dictionary ->
-- T9 cipher
 - cesar box cipher
-- guess substitution cypher
-
-
-- all caesar shifts + word search
-  - input grid
-  - trim spaces
-  - key: caesar shift (alt: x,y dependent function)
-  - search  all shifts of grid for words
-  - output shifted grid, highlight found word matches
-  - output all caesar shifted matches as list
-- large word search ( / word grid finder)
-- T9
-- resistor
+- guess substitution cipher
 
 improvements:
 

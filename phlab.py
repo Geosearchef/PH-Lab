@@ -1,9 +1,12 @@
 import gradio as gr
+from setuptools.command.rotate import rotate
+
 from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex, T9LookupTree
 from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
 from evaluation import eval_expression
 from oeis import oeis_database
+from grid_search import find_rotated_grid_words
 import re
 import time
 from config import config
@@ -112,6 +115,28 @@ def index_words(words: str, indices: str, include_spaces: bool) -> str:
     except ValueError as e:
         return "Error: Indices must be integers"
 
+
+# Word grid
+
+def solve_word_grid(input_grid: str, all_rots: bool, reverse: bool) -> tuple[str, str]:
+    input_grid = input_grid.strip()
+    input_grid = input_grid.replace(" ", "").lower()
+
+    if len(input_grid) == 0:
+        return "", ""
+
+    results = find_rotated_grid_words(input_grid, rotate=all_rots, reverse=reverse)
+
+    output_grid = input_grid
+    if len(results) != 0 and results[0].x != -1: # catch invalid
+        matched_locations = [(x, res.y) for res in results for x in range(res.x, res.x + len(res.word)) if res.orientation == "horizontal"] + [(res.x, y) for res in results for y in range(res.y, res.y + len(res.word)) if res.orientation == "vertical"]
+    else:
+        matched_locations = []
+
+    output_grid = "\n".join("   ".join([c.upper() if (col_index, row_index) in matched_locations else "_" for col_index, c in enumerate(row)]) for row_index, row in enumerate(output_grid.split("\n")))
+
+
+    return output_grid, "\n".join([f"{res.word} - ({res.x+1},{res.y+1}) - {res.orientation} - rot {res.rot}{f" - reversed" if res.reversed else ""}" for res in results])
 
 # Base converter
 
@@ -297,6 +322,24 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             inputs=[indexing_words_input, indexing_indices_input, indexing_include_spaces_checkbox],
             outputs=[indexing_output]
         )
+
+    with gr.Tab("Word Grid"):
+        with gr.Column():
+            with gr.Row():
+                grid_input = gr.TextArea(label="Grid", placeholder="Grid of letters")
+                grid_output = gr.TextArea(label="Output", interactive=False)
+                grid_result_output = gr.TextArea(label="Results", interactive=False)
+
+            grid_search_all_rots = gr.Checkbox(label="Search all rotations")
+            grid_include_reverse = gr.Checkbox(label="Include reverse")
+
+            gr.on(
+                triggers=[grid_input.change, grid_search_all_rots.change, grid_include_reverse.change],
+                fn=solve_word_grid,
+                inputs=[grid_input, grid_search_all_rots, grid_include_reverse],
+                outputs=[grid_output, grid_result_output]
+            )
+
 
     with gr.Tab("Base Converter"):
         bases = [10, 2, 16, 8]
