@@ -3,7 +3,7 @@ from setuptools.command.rotate import rotate
 
 from ciphers import all_ciphers
 from dictionary import AnagramLookupTable, dictionary_all, dictionary_popular, find_words_by_regex, T9LookupTree
-from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy
+from analysis import bruteforce_string_filter_sort, analyze_frequencies, calculate_entropy, is_isbn
 from evaluation import eval_expression
 from oeis import oeis_database
 from grid_search import find_rotated_grid_words
@@ -158,6 +158,14 @@ def convert_base(input: str, in_base: str, out_base: str) -> str:
         return " ".join([int_to_base(int(num, int(in_base)), int(out_base)) for num in input.split()])
     except ValueError:
         return "Invalid"
+
+# ISBN
+
+def verify_isbns(isbns: str) -> str:
+    isbns = [s.strip().replace("-", "").replace(" ", "") for s in isbns.split("\n")]
+
+    return "\n".join([f"Yes ({candidate})" if is_isbn(candidate, dictionary_popular) else "No" for candidate in isbns])
+
 
 # OEIS
 
@@ -386,6 +394,42 @@ with gr.Blocks(css=css, theme=gr.themes.Default()) as app:
             inputs=[base_text_area_right, base_key_right, base_key_left],
             outputs=[base_text_area_left, base_key_left, base_key_right]
         )
+
+    with gr.Tab("ISBN"):
+        with gr.Row():
+            with gr.Column():
+                isbn_input = gr.TextArea(interactive=True, show_label=False, show_copy_button=False)
+                isbn_submit = gr.Button("Verify checksums", variant="primary")
+
+                gr.Markdown("""
+                ### ISBNs
+                An ISBN has **13 characters**. Before 2007, it had **10 characters**.
+                
+                The last digit is the checksum, which is between 0 - 10, 10 is indicated as `X`.
+                
+                #### Conversion
+                Convert from 10 to 13 by prepending `978`.
+                
+                #### Checksum
+                a + 3b + c + 3d + e + 3f + g + 3h + i + 3j + k + 3l + m ≡ 0   mod 10
+                
+                Here, m is the last digit and therefore checksum.
+                
+                #### Misc
+                *ISBNs can be Barcodes!*
+                
+                [https://en.wikipedia.org/wiki/ISBN](https://en.wikipedia.org/wiki/ISBN)""")
+
+            isbn_output = gr.TextArea(interactive=False, show_label=False, show_copy_button=False)
+
+
+        gr.on(
+            triggers=[isbn_submit.click, isbn_input.change],
+            fn=verify_isbns,
+            inputs=[isbn_input],
+            outputs=[isbn_output]
+        )
+
 
     with gr.Tab("Integer Series"):
         with gr.Row():
