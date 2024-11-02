@@ -48,8 +48,6 @@ def __find_grid_words(grid: str, rot_hint: int, reverse: bool) -> list[GridResul
 def search_string_for_submatches(s: str, reverse: bool) -> list[tuple[str, int, bool]]:
     matches = []
 
-    print("searching", s)
-
     for start in range(len(s) - 1):
         for end in range(start + 1 + 3, len(s)+1):  # min length: 3
             if s[start:end] in dictionary_popular:
