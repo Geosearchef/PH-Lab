@@ -90,7 +90,7 @@ def find_word(search_string: str, limit_to_common: bool) -> str:
 # Calculator
 
 def run_calculation(expr: str, password: str) -> str:
-    if not "calculator_password" in config or password.lower() not in config["calculator_password"]:
+    if not "calculator_password" in config or config["calculator_password"] not in password.lower():
         return "Wrong passcode"
     return eval_expression(expr)
 
